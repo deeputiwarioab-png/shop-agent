@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./apps/backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - GOOGLE_CLOUD_PROJECT=your-project-id
+    volumes:
+      - ./apps/backend:/app
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+
+  dashboard:
+    build: ./apps/dashboard
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/dashboard:/app
+      - /app/node_modules
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+
+  widget:
+    build: ./apps/widget
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./apps/widget:/app
+      - /app/node_modules

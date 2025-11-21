@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+langgraph
+langchain-google-vertexai
+google-cloud-aiplatform
+google-cloud-firestore
+pydantic
+httpx
+python-dotenv
