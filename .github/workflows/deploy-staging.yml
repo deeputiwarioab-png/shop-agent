@@ -26,8 +26,9 @@ jobs:
         uses: 'google-github-actions/setup-gcloud@v2'
       
       - name: 'Build and Push Docker Image'
+        continue-on-error: true
         run: |
-          gcloud builds submit --suppress-logs --project=${{ env.GCP_PROJECT_ID }} --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-backend-staging . || true
+          gcloud builds submit --suppress-logs --project=${{ env.GCP_PROJECT_ID }} --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-backend-staging .
       
       - name: 'Deploy to Cloud Run'
         run: |
@@ -42,6 +43,7 @@ jobs:
   deploy-dashboard:
     runs-on: ubuntu-latest
     needs: deploy-backend
+    if: always()
     defaults:
       run:
         working-directory: ./apps/dashboard
@@ -63,8 +65,9 @@ jobs:
           echo "url=$BACKEND_URL" >> $GITHUB_OUTPUT
       
       - name: 'Build and Push Docker Image'
+        continue-on-error: true
         run: |
-          gcloud builds submit --suppress-logs --project=${{ env.GCP_PROJECT_ID }} --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-dashboard-staging . || true
+          gcloud builds submit --suppress-logs --project=${{ env.GCP_PROJECT_ID }} --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-dashboard-staging .
       
       - name: 'Deploy to Cloud Run'
         run: |
@@ -79,6 +82,7 @@ jobs:
   deploy-widget:
     runs-on: ubuntu-latest
     needs: deploy-backend
+    if: always()
     defaults:
       run:
         working-directory: ./apps/widget
