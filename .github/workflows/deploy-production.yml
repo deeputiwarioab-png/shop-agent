@@ -1,0 +1,106 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_REGION: us-central1
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/backend
+    steps:
+      - uses: actions/checkout@v3
+      
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+      
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+      
+      - name: 'Build and Push Docker Image'
+        run: |
+          gcloud builds submit --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-backend-prod .
+      
+      - name: 'Deploy to Cloud Run'
+        run: |
+          gcloud run deploy shop-agent-backend-prod \
+            --image gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-backend-prod \
+            --platform managed \
+            --region ${{ env.GCP_REGION }} \
+            --allow-unauthenticated \
+            --set-env-vars GOOGLE_CLOUD_PROJECT=${{ env.GCP_PROJECT_ID }},GOOGLE_CLOUD_REGION=${{ env.GCP_REGION }}
+
+  deploy-dashboard:
+    runs-on: ubuntu-latest
+    needs: deploy-backend
+    defaults:
+      run:
+        working-directory: ./apps/dashboard
+    steps:
+      - uses: actions/checkout@v3
+      
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+      
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+      
+      - name: 'Get Backend URL'
+        id: backend-url
+        run: |
+          BACKEND_URL=$(gcloud run services describe shop-agent-backend-prod --region ${{ env.GCP_REGION }} --format='value(status.url)')
+          echo "url=$BACKEND_URL" >> $GITHUB_OUTPUT
+      
+      - name: 'Build and Push Docker Image'
+        run: |
+          gcloud builds submit --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-dashboard-prod .
+      
+      - name: 'Deploy to Cloud Run'
+        run: |
+          gcloud run deploy shop-agent-dashboard-prod \
+            --image gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-dashboard-prod \
+            --platform managed \
+            --region ${{ env.GCP_REGION }} \
+            --allow-unauthenticated \
+            --set-env-vars NEXT_PUBLIC_API_URL=${{ steps.backend-url.outputs.url }}
+
+  deploy-widget:
+    runs-on: ubuntu-latest
+    needs: deploy-backend
+    defaults:
+      run:
+        working-directory: ./apps/widget
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - run: npm ci
+      
+      - run: npm run build
+      
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+      
+      - name: 'Upload to GCS'
+        uses: 'google-github-actions/upload-cloud-storage@v2'
+        with:
+          path: './apps/widget/dist'
+          destination: '${{ secrets.GCS_BUCKET_NAME_PROD }}'
+          parent: false
+          headers: |-
+            cache-control: public, max-age=3600
