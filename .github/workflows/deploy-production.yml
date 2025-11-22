@@ -27,7 +27,7 @@ jobs:
       
       - name: 'Build and Push Docker Image'
         run: |
-          BUILD_ID=$(gcloud builds submit --async --format="value(id)" --project=${{ env.GCP_PROJECT_ID }} --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-backend-prod .)
+          BUILD_ID=$(gcloud builds submit --no-cache --async --format="value(id)" --project=${{ env.GCP_PROJECT_ID }} --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-backend-prod .)
           echo "Build submitted with ID: $BUILD_ID"
           while true; do
             STATUS=$(gcloud builds describe $BUILD_ID --project=${{ env.GCP_PROJECT_ID }} --format="value(status)")
@@ -76,7 +76,7 @@ jobs:
       
       - name: 'Build and Push Docker Image'
         run: |
-          BUILD_ID=$(gcloud builds submit --async --format="value(id)" --project=${{ env.GCP_PROJECT_ID }} --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-dashboard-prod .)
+          BUILD_ID=$(gcloud builds submit --no-cache --async --format="value(id)" --project=${{ env.GCP_PROJECT_ID }} --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-dashboard-prod .)
           echo "Build submitted with ID: $BUILD_ID"
           while true; do
             STATUS=$(gcloud builds describe $BUILD_ID --project=${{ env.GCP_PROJECT_ID }} --format="value(status)")
