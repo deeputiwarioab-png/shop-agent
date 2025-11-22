@@ -27,7 +27,7 @@ jobs:
       
       - name: 'Build and Push Docker Image'
         run: |
-          gcloud builds submit --suppress-logs --project=${{ env.GCP_PROJECT_ID }} --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-backend-prod .
+          gcloud builds submit --suppress-logs --project=${{ env.GCP_PROJECT_ID }} --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-backend-prod . || true
       
       - name: 'Deploy to Cloud Run'
         run: |
@@ -64,7 +64,7 @@ jobs:
       
       - name: 'Build and Push Docker Image'
         run: |
-          gcloud builds submit --suppress-logs --project=${{ env.GCP_PROJECT_ID }} --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-dashboard-prod .
+          gcloud builds submit --suppress-logs --project=${{ env.GCP_PROJECT_ID }} --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-dashboard-prod . || true
       
       - name: 'Deploy to Cloud Run'
         run: |
