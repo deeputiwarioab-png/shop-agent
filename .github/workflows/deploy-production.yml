@@ -93,9 +93,12 @@ jobs:
         with:
           node-version: '18'
       
-      - run: npm ci
+      - run: npm install
       
       - run: npm run build
+
+      - name: List dist directory
+        run: ls -la dist || echo "dist directory not found"
       
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
