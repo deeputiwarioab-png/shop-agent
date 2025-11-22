@@ -27,11 +27,12 @@ jobs:
       
       - name: 'Build and Push Docker Image'
         run: |
-          gcloud builds submit --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-backend-staging .
+          gcloud builds submit --project=${{ env.GCP_PROJECT_ID }} --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-backend-staging .
       
       - name: 'Deploy to Cloud Run'
         run: |
           gcloud run deploy shop-agent-backend-staging \
+            --project=${{ env.GCP_PROJECT_ID }} \
             --image gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-backend-staging \
             --platform managed \
             --region ${{ env.GCP_REGION }} \
@@ -58,16 +59,17 @@ jobs:
       - name: 'Get Backend URL'
         id: backend-url
         run: |
-          BACKEND_URL=$(gcloud run services describe shop-agent-backend-staging --region ${{ env.GCP_REGION }} --format='value(status.url)')
+          BACKEND_URL=$(gcloud run services describe shop-agent-backend-staging --project=${{ env.GCP_PROJECT_ID }} --region ${{ env.GCP_REGION }} --format='value(status.url)')
           echo "url=$BACKEND_URL" >> $GITHUB_OUTPUT
       
       - name: 'Build and Push Docker Image'
         run: |
-          gcloud builds submit --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-dashboard-staging .
+          gcloud builds submit --project=${{ env.GCP_PROJECT_ID }} --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-dashboard-staging .
       
       - name: 'Deploy to Cloud Run'
         run: |
           gcloud run deploy shop-agent-dashboard-staging \
+            --project=${{ env.GCP_PROJECT_ID }} \
             --image gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-dashboard-staging \
             --platform managed \
             --region ${{ env.GCP_REGION }} \
