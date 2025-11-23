@@ -9,14 +9,25 @@ export default function Home() {
     const handleSync = async () => {
         setStatus('Syncing products... This may take a while.');
         try {
-            // In a real app, this would call the backend API to trigger ingestion
-            // await fetch('/api/sync', { method: 'POST', body: JSON.stringify({ shopUrl, apiToken }) });
+            // Use environment variable or fallback to production URL
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://shop-agent-backend-prod-c3lyao3wuq-uc.a.run.app';
 
-            // Mocking the delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            setStatus('Sync complete! 50,000 products indexed.');
+            const response = await fetch(`${apiUrl}/sync`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ shop_url: shopUrl, api_token: apiToken })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Sync failed with status: ${response.status}`);
+            }
+
+            setStatus('Sync started! Check backend logs for progress.');
         } catch (error) {
-            setStatus('Error syncing products.');
+            console.error(error);
+            setStatus('Error syncing products. Check console for details.');
         }
     };
 
