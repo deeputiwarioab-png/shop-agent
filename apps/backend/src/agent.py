@@ -29,6 +29,8 @@ class AgentState(TypedDict):
 
 # --- Tools ---
 
+@tool
+def search_products(query: str):
     """
     Search for products in the store using semantic search.
     Returns a list of products with title, price, and ID.
@@ -74,6 +76,7 @@ class AgentState(TypedDict):
     except Exception as e:
         logger.error(f"Error during vector search: {e}")
         return []
+
 
 @tool
 def add_to_cart(product_id: str, quantity: int = 1):
