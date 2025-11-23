@@ -14,27 +14,15 @@ function mount() {
     container.id = WIDGET_ID;
     document.body.appendChild(container);
 
-    // Create Shadow DOM
-    const shadow = container.attachShadow({ mode: 'open' });
+    console.log('Shop Agent Widget: Mounting...');
 
-    // Create a mount point inside Shadow DOM
-    const mountPoint = document.createElement('div');
-    shadow.appendChild(mountPoint);
-
-    // Inject styles manually if needed, or rely on vite-plugin-css-injected-by-js
-    // The plugin usually injects styles into the document head, which might not penetrate Shadow DOM.
-    // For a robust solution, we might need to manually fetch styles or use a different approach.
-    // However, for this MVP, let's try to inject the styles into the shadow root.
-
-    // Note: In a real production build with 'vite-plugin-css-injected-by-js', 
-    // it might try to put style tags in <head>. We might need to move them or configure the plugin.
-    // For now, let's assume standard React rendering.
-
-    ReactDOM.createRoot(mountPoint).render(
+    // Mount directly to container (No Shadow DOM to avoid style isolation issues)
+    ReactDOM.createRoot(container).render(
         <React.StrictMode>
             <App />
         </React.StrictMode>,
     )
+    console.log('Shop Agent Widget: Mounted');
 }
 
 // Auto-mount when script loads
