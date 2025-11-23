@@ -52,7 +52,7 @@ def search_products(query: str):
         vector_store = VectorSearchVectorStore.from_components(
             project_id=project_id,
             region=location,
-            gcs_bucket_name=f"{project_id}-shop-agent-bucket", # Assuming bucket naming convention
+            gcs_bucket_name=os.getenv("GCS_BUCKET_NAME", f"{project_id}-shop-agent-index"),
             index_id=index_id,
             endpoint_id=endpoint_id,
             embedding=embeddings

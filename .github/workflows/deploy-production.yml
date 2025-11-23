@@ -48,7 +48,7 @@ jobs:
             --platform managed \
             --region ${{ env.GCP_REGION }} \
             --allow-unauthenticated \
-            --set-env-vars GOOGLE_CLOUD_PROJECT=${{ env.GCP_PROJECT_ID }},GOOGLE_CLOUD_REGION=${{ env.GCP_REGION }},VERTEX_ENDPOINT_ID=780076214303195136,VERTEX_INDEX_ID=3455242354737152000,GCS_BUCKET_NAME=${{ secrets.GCS_BUCKET_NAME_PROD }}
+            --set-env-vars GOOGLE_CLOUD_PROJECT=${{ env.GCP_PROJECT_ID }},GOOGLE_CLOUD_REGION=${{ env.GCP_REGION }},VERTEX_ENDPOINT_ID=780076214303195136,VERTEX_INDEX_ID=3455242354737152000,GCS_BUCKET_NAME=arched-flame-474019-e3-shop-agent-index
 
   deploy-dashboard:
     runs-on: ubuntu-latest
