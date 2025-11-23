@@ -21,6 +21,20 @@ jobs:
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
+      
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+      
+      - name: 'Build and Push Docker Image'
+        run: |
+          BUILD_DATE=$(date +%s)
+          BUILD_ID=$(gcloud builds submit --async --format="value(id)" --project=${{ env.GCP_PROJECT_ID }} --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-backend-staging --substitutions=_BUILD_DATE=$BUILD_DATE .)
+          echo "Build submitted with ID: $BUILD_ID"
+          while true; do
+            STATUS=$(gcloud builds describe $BUILD_ID --project=${{ env.GCP_PROJECT_ID }} --format="value(status)")
+            echo "Build status: $STATUS"
+            if [ "$STATUS" = "SUCCESS" ]; then
+              exit 0
             elif [ "$STATUS" = "FAILURE" ] || [ "$STATUS" = "INTERNAL_ERROR" ] || [ "$STATUS" = "TIMEOUT" ] || [ "$STATUS" = "CANCELLED" ]; then
               exit 1
             fi
@@ -57,6 +71,20 @@ jobs:
       
       - name: 'Get Backend URL'
         id: backend-url
+        run: |
+          BACKEND_URL=$(gcloud run services describe shop-agent-backend-staging --project=${{ env.GCP_PROJECT_ID }} --region ${{ env.GCP_REGION }} --format='value(status.url)')
+          echo "url=$BACKEND_URL" >> $GITHUB_OUTPUT
+      
+      - name: 'Build and Push Docker Image'
+        run: |
+          BUILD_DATE=$(date +%s)
+          BUILD_ID=$(gcloud builds submit --async --format="value(id)" --project=${{ env.GCP_PROJECT_ID }} --tag gcr.io/${{ env.GCP_PROJECT_ID }}/shop-agent-dashboard-staging --substitutions=_BUILD_DATE=$BUILD_DATE .)
+          echo "Build submitted with ID: $BUILD_ID"
+          while true; do
+            STATUS=$(gcloud builds describe $BUILD_ID --project=${{ env.GCP_PROJECT_ID }} --format="value(status)")
+            echo "Build status: $STATUS"
+            if [ "$STATUS" = "SUCCESS" ]; then
+              exit 0
             elif [ "$STATUS" = "FAILURE" ] || [ "$STATUS" = "INTERNAL_ERROR" ] || [ "$STATUS" = "TIMEOUT" ] || [ "$STATUS" = "CANCELLED" ]; then
               exit 1
             fi
