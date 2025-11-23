@@ -29,25 +29,51 @@ class AgentState(TypedDict):
 
 # --- Tools ---
 
-@tool
-def search_products(query: str):
     """
     Search for products in the store using semantic search.
     Returns a list of products with title, price, and ID.
     """
-    # Initialize Vector Store (assuming it's already set up)
-    embeddings = VertexAIEmbeddings(model_name="text-embedding-004")
-    
-    # In a real scenario, we need the index ID and endpoint ID.
-    # For now, we'll mock the retrieval or assume env vars are set.
-    # vector_store = VectorSearchVectorStore(...)
-    
-    # Mock response for now to ensure flow works without full GCP connectivity
     logger.info(f"Searching for: {query}")
-    return [
-        {"title": "Cool T-Shirt", "price": "29.99", "id": "gid://shopify/Product/123"},
-        {"title": "Awesome Hoodie", "price": "59.99", "id": "gid://shopify/Product/456"}
-    ]
+    
+    project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
+    location = os.getenv("GOOGLE_CLOUD_REGION", "us-central1")
+    index_id = os.getenv("VERTEX_INDEX_ID")
+    endpoint_id = os.getenv("VERTEX_ENDPOINT_ID")
+    
+    if not index_id or not endpoint_id:
+        logger.warning("Vertex AI Index ID or Endpoint ID not set. Returning empty results.")
+        return []
+
+    try:
+        embeddings = VertexAIEmbeddings(model_name="text-embedding-004")
+        
+        vector_store = VectorSearchVectorStore.from_components(
+            project_id=project_id,
+            region=location,
+            gcs_bucket_name=f"{project_id}-shop-agent-bucket", # Assuming bucket naming convention
+            index_id=index_id,
+            endpoint_id=endpoint_id,
+            embedding=embeddings
+        )
+        
+        # Search for top 5 products
+        results = vector_store.similarity_search(query, k=5)
+        
+        products = []
+        for res in results:
+            # Metadata is stored in the document
+            products.append({
+                "title": res.metadata.get("title", "Unknown Product"),
+                "price": res.metadata.get("price", "0.00"),
+                "id": res.metadata.get("id", ""),
+                "image_url": res.metadata.get("image_url", ""),
+                "handle": res.metadata.get("handle", "")
+            })
+            
+        return products
+    except Exception as e:
+        logger.error(f"Error during vector search: {e}")
+        return []
 
 @tool
 def add_to_cart(product_id: str, quantity: int = 1):

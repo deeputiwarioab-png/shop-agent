@@ -157,7 +157,7 @@ function App() {
         setIsLoading(true);
 
         try {
-            const apiUrl = 'https://shop-agent-backend-c3lyao3wuq-uc.a.run.app';
+            const apiUrl = 'https://shop-agent-backend-prod-c3lyao3wuq-uc.a.run.app';
             const response = await fetch(`${apiUrl}/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
