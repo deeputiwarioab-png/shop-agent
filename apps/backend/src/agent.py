@@ -6,7 +6,7 @@ from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from langchain_core.tools import tool
 from langchain_google_vertexai import ChatVertexAI
 from langchain_google_vertexai import VertexAIEmbeddings, VectorSearchVectorStore
-from langgraph.prebuilt import ToolExecutor, ToolInvocation
+
 import operator
 
 # Import our custom client
