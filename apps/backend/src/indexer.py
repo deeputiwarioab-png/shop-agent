@@ -121,8 +121,15 @@ class ProductIndexer:
 
         logger.info(f"Generating embeddings for {len(texts)} products...")
         
-        # Generate embeddings
-        embeddings = self.embeddings_model.embed_documents(texts)
+        # Generate embeddings in batches to respect Vertex AI limits (250 instances/prediction)
+        BATCH_SIZE = 200  # Conservative batch size
+        embeddings = []
+        for i in range(0, len(texts), BATCH_SIZE):
+            batch_texts = texts[i:i+BATCH_SIZE]
+            logger.info(f"Processing batch {i//BATCH_SIZE + 1} ({len(batch_texts)} products)...")
+            batch_embeddings = self.embeddings_model.embed_documents(batch_texts)
+            embeddings.extend(batch_embeddings)
+        
         logger.info(f"Generated {len(embeddings)} embeddings, first embedding has {len(embeddings[0])} dimensions")
 
         logger.info("Uploading to Vector Search...")
@@ -138,12 +145,13 @@ class ProductIndexer:
             embedding=self.embeddings_model
         )
         
-        # UPSERT LOGIC: Delete all existing data first, then add new
-        # Note: VectorSearchVectorStore doesn't have a built-in delete_all method
-        # For true upsert, we'd need to track existing IDs and delete them individually
-        # For now, we'll just add (which may create duplicates on re-sync)
-        # TODO: Implement proper upsert with ID tracking
-        logger.info("Adding products to vector store...")
-        vector_store.add_texts(texts=texts, metadatas=metadatas, ids=ids)
+        # UPSERT LOGIC: Add products in batches
+        logger.info(f"Adding {len(products)} products to vector store in batches...")
+        for i in range(0, len(texts), BATCH_SIZE):
+            batch_texts = texts[i:i+BATCH_SIZE]
+            batch_metadatas = metadatas[i:i+BATCH_SIZE]
+            batch_ids = ids[i:i+BATCH_SIZE]
+            logger.info(f"Uploading batch {i//BATCH_SIZE + 1} ({len(batch_texts)} products)...")
+            vector_store.add_texts(texts=batch_texts, metadatas=batch_metadatas, ids=batch_ids)
         
         logger.info(f"Ingestion complete. {len(products)} products indexed across {len(categories)} categories.")
