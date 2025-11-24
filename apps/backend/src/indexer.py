@@ -14,14 +14,12 @@ PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT")
 REGION = os.getenv("GOOGLE_CLOUD_REGION", "us-central1")
 aiplatform.init(project=PROJECT_ID, location=REGION)
 
+
 class ProductIndexer:
     def __init__(self, shopify_client: ShopifyClient):
         self.shopify_client = shopify_client
-        # Explicitly set dimensions to 768 to match Vertex AI index configuration
-        self.embeddings_model = VertexAIEmbeddings(
-            model_name="text-embedding-004",
-            task_type="RETRIEVAL_DOCUMENT"
-        )
+        # Use default VertexAI embeddings (768 dimensions)
+        self.embeddings_model = VertexAIEmbeddings(model_name="text-embedding-004")
         self.db = firestore.Client()
 
     def clean_html(self, raw_html: str) -> str:
