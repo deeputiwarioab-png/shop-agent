@@ -135,6 +135,9 @@ class ProductIndexer:
         logger.info(f"Generated {len(embeddings)} embeddings, first embedding has {len(embeddings[0])} dimensions")
 
         logger.info("Uploading to Vector Search...")
+        logger.info(f"Using Project: {PROJECT_ID}, Region: {REGION}")
+        logger.info(f"Using Index ID: {index_id}")
+        logger.info(f"Using Endpoint ID: {index_endpoint_name}")
         
         from langchain_google_vertexai import VectorSearchVectorStore
         
