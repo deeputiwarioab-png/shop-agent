@@ -41,18 +41,20 @@ def search_products(query: str):
     location = os.getenv("GOOGLE_CLOUD_REGION", "us-central1")
     index_id = os.getenv("VERTEX_INDEX_ID")
     endpoint_id = os.getenv("VERTEX_ENDPOINT_ID")
+    bucket_name = os.getenv("GCS_BUCKET_NAME")
     
     if not index_id or not endpoint_id:
         logger.warning("Vertex AI Index ID or Endpoint ID not set. Returning empty results.")
         return []
 
     try:
+        # Use default VertexAI embeddings (768 dimensions)
         embeddings = VertexAIEmbeddings(model_name="text-embedding-004")
         
         vector_store = VectorSearchVectorStore.from_components(
             project_id=project_id,
             region=location,
-            gcs_bucket_name=os.getenv("GCS_BUCKET_NAME", f"{project_id}-shop-agent-index"),
+            gcs_bucket_name=bucket_name,
             index_id=index_id,
             endpoint_id=endpoint_id,
             embedding=embeddings
@@ -69,7 +71,8 @@ def search_products(query: str):
                 "price": res.metadata.get("price", "0.00"),
                 "id": res.metadata.get("id", ""),
                 "image_url": res.metadata.get("image_url", ""),
-                "handle": res.metadata.get("handle", "")
+                "handle": res.metadata.get("handle", ""),
+                "category": res.metadata.get("category", "General")
             })
             
         return products

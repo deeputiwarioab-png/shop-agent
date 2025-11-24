@@ -57,7 +57,7 @@ class ProductIndexer:
                 categories.add(product_type)
         return categories
 
-    async def ingest_products(self, index_endpoint_name: str, deployed_index_id: str):
+    async def ingest_products(self, index_endpoint_name: str, index_id: str):
         """
         Fetch products, generate embeddings, and upload to Vector Search with upsert logic.
         Uses delete-all + add pattern for simplicity (avoids duplicates).
@@ -138,11 +138,13 @@ class ProductIndexer:
         
         from langchain_google_vertexai import VectorSearchVectorStore
         
+        # Use passed arguments instead of env vars
+        # Note: endpoint_id in VectorSearchVectorStore expects the Endpoint ID, not the name
         vector_store = VectorSearchVectorStore.from_components(
             project_id=PROJECT_ID,
             region=REGION,
             gcs_bucket_name=os.getenv("GCS_BUCKET_NAME"),
-            index_id=os.getenv("VERTEX_INDEX_ID"),
+            index_id=index_id,
             endpoint_id=index_endpoint_name,
             embedding=self.embeddings_model
         )
