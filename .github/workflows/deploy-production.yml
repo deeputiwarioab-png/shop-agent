@@ -48,6 +48,8 @@ jobs:
             --platform managed \
             --region ${{ env.GCP_REGION }} \
             --allow-unauthenticated \
+            --no-cpu-throttling \
+            --timeout=900 \
             --set-env-vars GOOGLE_CLOUD_PROJECT=${{ env.GCP_PROJECT_ID }},GOOGLE_CLOUD_REGION=${{ env.GCP_REGION }},VERTEX_ENDPOINT_ID=8352613803237572608,VERTEX_INDEX_ID=7338134006707257344,GCS_BUCKET_NAME=arched-flame-474019-e3-shop-agent-index
 
   deploy-dashboard:
