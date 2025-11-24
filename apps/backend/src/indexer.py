@@ -124,13 +124,25 @@ class ProductIndexer:
         # Generate embeddings in batches to respect:
         # 1. Vertex AI's 250 instances/prediction limit
         # 2. text-embedding-004's 20K token/request limit
-        BATCH_SIZE = 50  # Conservative batch size to stay under token limits
+        # 3. Timeouts (smaller batches = faster per-request processing)
+        BATCH_SIZE = 20  # Reduced to 20 to avoid timeouts
         embeddings = []
+        
+        import time
+        
         for i in range(0, len(texts), BATCH_SIZE):
             batch_texts = texts[i:i+BATCH_SIZE]
             logger.info(f"Processing batch {i//BATCH_SIZE + 1} ({len(batch_texts)} products)...")
-            batch_embeddings = self.embeddings_model.embed_documents(batch_texts)
-            embeddings.extend(batch_embeddings)
+            
+            start_time = time.time()
+            try:
+                batch_embeddings = self.embeddings_model.embed_documents(batch_texts)
+                embeddings.extend(batch_embeddings)
+                elapsed = time.time() - start_time
+                logger.info(f"Batch {i//BATCH_SIZE + 1} processed in {elapsed:.2f}s")
+            except Exception as e:
+                logger.error(f"Error embedding batch {i//BATCH_SIZE + 1}: {e}")
+                raise e
         
         logger.info(f"Generated {len(embeddings)} embeddings, first embedding has {len(embeddings[0])} dimensions")
 
