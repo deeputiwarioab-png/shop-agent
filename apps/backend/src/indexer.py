@@ -121,8 +121,10 @@ class ProductIndexer:
 
         logger.info(f"Generating embeddings for {len(texts)} products...")
         
-        # Generate embeddings in batches to respect Vertex AI limits (250 instances/prediction)
-        BATCH_SIZE = 200  # Conservative batch size
+        # Generate embeddings in batches to respect:
+        # 1. Vertex AI's 250 instances/prediction limit
+        # 2. text-embedding-004's 20K token/request limit
+        BATCH_SIZE = 50  # Conservative batch size to stay under token limits
         embeddings = []
         for i in range(0, len(texts), BATCH_SIZE):
             batch_texts = texts[i:i+BATCH_SIZE]
